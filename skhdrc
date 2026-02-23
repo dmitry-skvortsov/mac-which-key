@@ -1,0 +1,287 @@
+# skhd.zig config: emacs-like layered workflow for yabai + HUD.
+# default mode keeps only focus + space focus.
+
+.shell "/bin/zsh"
+
+# -----------------------------
+# Reusable command definitions (skhd.zig)
+# -----------------------------
+
+.define focus_window : yabai -m window --focus {{1}}
+.define swap_window : yabai -m window --swap {{1}}
+.define warp_window : yabai -m window --warp {{1}}
+.define stack_window : yabai -m window --stack {{1}}
+
+
+# -----------------------------
+# Default mode (only focus)
+# -----------------------------
+
+fn - h : @focus_window("west")
+fn - j : @focus_window("south")
+fn - k : @focus_window("north")
+fn - l : @focus_window("east")
+
+fn - p : yabai -m space --focus prev
+fn - n : yabai -m space --focus next
+
+# Enter window manager leader.
+fn - w ; wm
+
+# Enter app launcher group.
+fn - x ; app
+
+# -----------------------------
+# App launcher group
+# -----------------------------
+
+:: app : $HOME/.config/skhd/hud.sh push apps "[G]hostty | [C]hrome | zen [B]rowser | [E]macs { [G] | [C] | [B] | [E] }"
+
+app < g ; default : ($HOME/.config/yabai/new_here.sh ghostty || open -na Ghostty || true) && $HOME/.config/skhd/hud.sh reset
+app < c ; default : ($HOME/.config/yabai/new_here.sh chrome || open -na "Google Chrome" || true) && $HOME/.config/skhd/hud.sh reset
+app < b ; default : ($HOME/.config/yabai/new_here.sh zen || open -na "Zen Browser" || open -na Zen || true) && $HOME/.config/skhd/hud.sh reset
+app < e ; default : ($HOME/.config/yabai/new_here.sh emacs || open -na Emacs || true) && $HOME/.config/skhd/hud.sh reset
+
+app < escape ; default : $HOME/.config/skhd/hud.sh reset
+app < backspace ; default : $HOME/.config/skhd/hud.sh reset
+app < q ; default : $HOME/.config/skhd/hud.sh reset
+
+
+# -----------------------------
+# Root layer
+# -----------------------------
+
+:: wm : $HOME/.config/skhd/hud.sh push window "[R]esize | [S]wap | [M]ove | [T]oggle | s[P]ace | [D]isplay | st[A]ck { [H] | [J] | [K] | [L] }"
+
+# Keep directional focus available in root.
+wm < h : @focus_window("west")
+wm < j : @focus_window("south")
+wm < k : @focus_window("north")
+wm < l : @focus_window("east")
+wm < tab : yabai -m window --focus recent
+
+# Sub-layers.
+wm < r ; wm_resize
+wm < s ; wm_swap
+wm < m ; wm_move
+wm < t ; wm_toggle
+wm < p ; wm_space
+wm < d ; wm_display
+wm < a ; wm_stack
+
+wm < escape ; default : $HOME/.config/skhd/hud.sh reset
+wm < backspace ; default : $HOME/.config/skhd/hud.sh reset
+wm < q ; default : $HOME/.config/skhd/hud.sh reset
+
+
+# -----------------------------
+# Resize layer
+# -----------------------------
+
+:: wm_resize : $HOME/.config/skhd/hud.sh push resize "[H]/[J]/[K]/[L] Resize frame | ratio [N]/[P] +/- | [0] Equalize { [H] | [J] | [K] | [L] | [N] | [P] | [0] }"
+
+wm_resize < h : (yabai -m window --resize left:50:0 && yabai -m window --resize right:-50:0) || yabai -m window --resize rel:-100:0
+wm_resize < j : (yabai -m window --resize top:0:-50 && yabai -m window --resize bottom:0:50) || yabai -m window --resize rel:0:100
+wm_resize < k : (yabai -m window --resize top:0:50 && yabai -m window --resize bottom:0:-50) || yabai -m window --resize rel:0:-100
+wm_resize < l : (yabai -m window --resize left:-50:0 && yabai -m window --resize right:50:0) || yabai -m window --resize rel:100:0
+wm_resize < p : yabai -m window --ratio rel:-0.05
+wm_resize < n : yabai -m window --ratio rel:0.05
+wm_resize < 0 : yabai -m space --equalize
+
+wm_resize < escape ; default : $HOME/.config/skhd/hud.sh reset
+wm_resize < backspace ; wm : $HOME/.config/skhd/hud.sh pop
+wm_resize < q ; default : $HOME/.config/skhd/hud.sh reset
+
+
+# -----------------------------
+# Swap layer
+# -----------------------------
+
+:: wm_swap : $HOME/.config/skhd/hud.sh push swap "[H]/[J]/[K]/[L] Swap direction | [N]/[P] Next/Prev | cu[R]rent-recent { [H] | [J] | [K] | [L] | [N] | [P] | [R] }"
+
+wm_swap < h : @swap_window("west")
+wm_swap < j : @swap_window("south")
+wm_swap < k : @swap_window("north")
+wm_swap < l : @swap_window("east")
+wm_swap < n : yabai -m window --swap next
+wm_swap < p : yabai -m window --swap prev
+wm_swap < r : yabai -m window --swap recent
+
+wm_swap < escape ; default : $HOME/.config/skhd/hud.sh reset
+wm_swap < backspace ; wm : $HOME/.config/skhd/hud.sh pop
+wm_swap < q ; default : $HOME/.config/skhd/hud.sh reset
+
+
+# -----------------------------
+# Move/warp layer
+# -----------------------------
+
+:: wm_move : $HOME/.config/skhd/hud.sh push move "[H]/[J]/[K]/[L] Warp | [N]/[P] Send + follow | [1..9] Send + follow { [H] | [J] | [K] | [L] | [N] | [P] | [1..9] }"
+
+wm_move < h : @warp_window("west")
+wm_move < j : @warp_window("south")
+wm_move < k : @warp_window("north")
+wm_move < l : @warp_window("east")
+
+wm_move < p : yabai -m window --space prev --focus
+wm_move < n : yabai -m window --space next --focus
+
+wm_move < 1 : yabai -m window --space 1 --focus
+wm_move < 2 : yabai -m window --space 2 --focus
+wm_move < 3 : yabai -m window --space 3 --focus
+wm_move < 4 : yabai -m window --space 4 --focus
+wm_move < 5 : yabai -m window --space 5 --focus
+wm_move < 6 : yabai -m window --space 6 --focus
+wm_move < 7 : yabai -m window --space 7 --focus
+wm_move < 8 : yabai -m window --space 8 --focus
+wm_move < 9 : yabai -m window --space 9 --focus
+
+wm_move < escape ; default : $HOME/.config/skhd/hud.sh reset
+wm_move < backspace ; wm : $HOME/.config/skhd/hud.sh pop
+wm_move < q ; default : $HOME/.config/skhd/hud.sh reset
+
+
+# -----------------------------
+# Toggle layer
+# -----------------------------
+# Note: sticky/pip/shadow may require scripting-addition + SIP adjustments.
+
+:: wm_toggle : $HOME/.config/skhd/hud.sh push toggle "[F]loat | [Z]oom parent | zoom e[X]tra full | [W]indowed FS | [N]ative FS | [S]plit | stic[Y] | [P]iP | shad[O]w | [E]xpose { [F] | [Z] | [X] | [W] | [N] | [S] | [Y] | [P] | [O] | [E] }"
+
+wm_toggle < f : yabai -m window --toggle float --grid 4:4:1:1:2:2
+wm_toggle < z : yabai -m window --toggle zoom-parent
+wm_toggle < x : yabai -m window --toggle zoom-fullscreen
+wm_toggle < w : yabai -m window --toggle windowed-fullscreen
+wm_toggle < n : yabai -m window --toggle native-fullscreen
+wm_toggle < s : yabai -m window --toggle split
+wm_toggle < y : yabai -m window --toggle sticky
+wm_toggle < p : yabai -m window --toggle pip
+wm_toggle < o : yabai -m window --toggle shadow
+wm_toggle < e : yabai -m window --toggle expose
+
+wm_toggle < escape ; default : $HOME/.config/skhd/hud.sh reset
+wm_toggle < backspace ; wm : $HOME/.config/skhd/hud.sh pop
+wm_toggle < q ; default : $HOME/.config/skhd/hud.sh reset
+
+
+# -----------------------------
+# Space layer
+# -----------------------------
+
+:: wm_space : $HOME/.config/skhd/hud.sh push space "[H]/[L]/[P]/[N] Focus prev/next | [J]/[K] Move space prev/next | [C]reate | e[X]punge | La[Y]out | [G]aps { [1..9] }"
+
+wm_space < h : yabai -m space --focus prev
+wm_space < l : yabai -m space --focus next
+wm_space < p : yabai -m space --focus prev
+wm_space < n : yabai -m space --focus next
+
+wm_space < j : yabai -m space --move prev
+wm_space < k : yabai -m space --move next
+
+wm_space < c : yabai -m space --create
+wm_space < x : yabai -m space --destroy
+
+wm_space < 1 : yabai -m space --focus 1
+wm_space < 2 : yabai -m space --focus 2
+wm_space < 3 : yabai -m space --focus 3
+wm_space < 4 : yabai -m space --focus 4
+wm_space < 5 : yabai -m space --focus 5
+wm_space < 6 : yabai -m space --focus 6
+wm_space < 7 : yabai -m space --focus 7
+wm_space < 8 : yabai -m space --focus 8
+wm_space < 9 : yabai -m space --focus 9
+
+wm_space < y ; wm_layout
+wm_space < g ; wm_gap
+
+wm_space < escape ; default : $HOME/.config/skhd/hud.sh reset
+wm_space < backspace ; wm : $HOME/.config/skhd/hud.sh pop
+wm_space < q ; default : $HOME/.config/skhd/hud.sh reset
+
+
+# -----------------------------
+# Layout layer
+# -----------------------------
+
+:: wm_layout : $HOME/.config/skhd/hud.sh push layout "[B]SP | [S]tack | [F]loat | mirror [H]/[L] X/Y | rotate [J]/[K] 270/90 | [E]qualize | bal[A]nce { [B] | [S] | [F] | [H] | [L] | [J] | [K] | [E] | [A] }"
+
+wm_layout < b : yabai -m space --layout bsp
+wm_layout < s : yabai -m space --layout stack
+wm_layout < f : yabai -m space --layout float
+wm_layout < h : yabai -m space --mirror x-axis
+wm_layout < l : yabai -m space --mirror y-axis
+wm_layout < j : yabai -m space --rotate 270
+wm_layout < k : yabai -m space --rotate 90
+wm_layout < e : yabai -m space --equalize
+wm_layout < a : yabai -m space --balance
+
+wm_layout < escape ; default : $HOME/.config/skhd/hud.sh reset
+wm_layout < backspace ; wm_space : $HOME/.config/skhd/hud.sh pop
+wm_layout < q ; default : $HOME/.config/skhd/hud.sh reset
+
+
+# -----------------------------
+# Gap/padding layer
+# -----------------------------
+
+:: wm_gap : $HOME/.config/skhd/hud.sh push gaps "[H]/[L] Gap -/+ | [J]/[K] Padding -/+ | [P]adding toggle | [N] gap toggle | [0] Reset { [H] | [J] | [K] | [L] | [P] | [N] | [0] }"
+
+wm_gap < h : yabai -m space --gap rel:-4
+wm_gap < l : yabai -m space --gap rel:4
+wm_gap < j : yabai -m space --padding rel:-4:-4:-4:-4
+wm_gap < k : yabai -m space --padding rel:4:4:4:4
+wm_gap < p : yabai -m space --toggle padding
+wm_gap < n : yabai -m space --toggle gap
+wm_gap < 0 : yabai -m space --padding abs:0:0:0:0; yabai -m space --gap abs:0
+
+wm_gap < escape ; default : $HOME/.config/skhd/hud.sh reset
+wm_gap < backspace ; wm_space : $HOME/.config/skhd/hud.sh pop
+wm_gap < q ; default : $HOME/.config/skhd/hud.sh reset
+
+
+# -----------------------------
+# Display layer
+# -----------------------------
+
+:: wm_display : $HOME/.config/skhd/hud.sh push display "[H]/[L]/[P]/[N] Focus display prev/next | [J]/[K] Send + follow display | [1..4] Focus display { [H] | [J] | [K] | [L] | [N] | [P] | [1] | [2] | [3] | [4] }"
+
+wm_display < h : yabai -m display --focus prev
+wm_display < l : yabai -m display --focus next
+wm_display < p : yabai -m display --focus prev
+wm_display < n : yabai -m display --focus next
+
+wm_display < j : yabai -m window --display prev && yabai -m display --focus prev
+wm_display < k : yabai -m window --display next && yabai -m display --focus next
+
+wm_display < 1 : yabai -m display --focus 1
+wm_display < 2 : yabai -m display --focus 2
+wm_display < 3 : yabai -m display --focus 3
+wm_display < 4 : yabai -m display --focus 4
+
+wm_display < escape ; default : $HOME/.config/skhd/hud.sh reset
+wm_display < backspace ; wm : $HOME/.config/skhd/hud.sh pop
+wm_display < q ; default : $HOME/.config/skhd/hud.sh reset
+
+
+# -----------------------------
+# Stack layer
+# -----------------------------
+
+:: wm_stack : $HOME/.config/skhd/hud.sh push stack "[H]/[J]/[K]/[L] Attach window to side stack | [I]nsert into current stack | [N]/[P] Cycle next/prev in stack | [F]/[O]/[R] Focus first/last/recent in stack { [H] | [J] | [K] | [L] | [I] | [N] | [P] | [F] | [O] | [R] }"
+
+wm_stack < h : @stack_window("west")
+wm_stack < j : @stack_window("south")
+wm_stack < k : @stack_window("north")
+wm_stack < l : @stack_window("east")
+wm_stack < i : yabai -m window --insert stack
+
+wm_stack < n : yabai -m window --focus stack.next
+wm_stack < p : yabai -m window --focus stack.prev
+wm_stack < f : yabai -m window --focus stack.first
+wm_stack < o : yabai -m window --focus stack.last
+wm_stack < r : yabai -m window --focus stack.recent
+
+wm_stack < escape ; default : $HOME/.config/skhd/hud.sh reset
+wm_stack < backspace ; wm : $HOME/.config/skhd/hud.sh pop
+wm_stack < q ; default : $HOME/.config/skhd/hud.sh reset
+
