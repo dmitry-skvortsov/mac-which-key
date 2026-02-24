@@ -80,10 +80,10 @@ wm < q ; default : $HOME/.config/skhd/hud.sh reset
 
 :: wm_resize : $HOME/.config/skhd/hud.sh push resize "[H]/[J]/[K]/[L] Resize frame | ratio [N]/[P] +/- | [0] Equalize { [H] | [J] | [K] | [L] | [N] | [P] | [0] }"
 
-wm_resize < h : (yabai -m window --resize left:50:0 && yabai -m window --resize right:-50:0) || yabai -m window --resize rel:-100:0
+wm_resize < h : yabai -m window --resize left:50:0 || yabai -m window --resize right:-50:0 || yabai -m window --ratio rel:-0.05
 wm_resize < j : (yabai -m window --resize top:0:-50 && yabai -m window --resize bottom:0:50) || yabai -m window --resize rel:0:100
 wm_resize < k : (yabai -m window --resize top:0:50 && yabai -m window --resize bottom:0:-50) || yabai -m window --resize rel:0:-100
-wm_resize < l : (yabai -m window --resize left:-50:0 && yabai -m window --resize right:50:0) || yabai -m window --resize rel:100:0
+wm_resize < l : yabai -m window --resize right:50:0 || yabai -m window --resize left:-50:0 || yabai -m window --ratio rel:0.05
 wm_resize < p : yabai -m window --ratio rel:-0.05
 wm_resize < n : yabai -m window --ratio rel:0.05
 wm_resize < 0 : yabai -m space --equalize
@@ -284,4 +284,3 @@ wm_stack < r : yabai -m window --focus stack.recent
 wm_stack < escape ; default : $HOME/.config/skhd/hud.sh reset
 wm_stack < backspace ; wm : $HOME/.config/skhd/hud.sh pop
 wm_stack < q ; default : $HOME/.config/skhd/hud.sh reset
-

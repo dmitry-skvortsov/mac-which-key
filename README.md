@@ -19,6 +19,8 @@ Layered modal keymap for `yabai` with HUD hints from Hammerspoon.
   - bridge script from `skhd` to Hammerspoon module (`push/pop/reset/show/hide`)
 - `./skhd_hud.lua`
   - HUD renderer, mode stack visuals, space badge, drag behavior, persisted position
+- `./skhd_hud_settings.lua`
+  - optional style config (ordered palette, alpha values, typography, position store file)
 - `./init.lua`
   - minimal Hammerspoon entrypoint (`require("skhd_hud").show()`)
 
@@ -37,6 +39,7 @@ mkdir -p "$HOME/.config/skhd" "$HOME/.hammerspoon"
 cp ./hud.sh "$HOME/.config/skhd/hud.sh"
 cp ./skhdrc "$HOME/.config/skhd/skhdrc"
 cp ./skhd_hud.lua "$HOME/.hammerspoon/skhd_hud.lua"
+cp ./skhd_hud_settings.lua "$HOME/.hammerspoon/skhd_hud_settings.lua"
 chmod +x "$HOME/.config/skhd/hud.sh"
 ln -sf "$HOME/.config/skhd/skhdrc" "$HOME/.skhdrc"
 ```
@@ -202,8 +205,9 @@ hs -c "hs.reload()"
 
 - Badge always shows focused space index.
 - Drag HUD with `Cmd + left mouse`.
-- Position is saved to `~/.hammerspoon/skhd_hud_position.lua`.
+- Position is saved to `~/.hammerspoon/skhd_hud_state.lua` (legacy `skhd_hud_position.lua` is still read).
 - Key hints wrapped in `[...]` are rendered larger and bold to improve scan speed.
+- `~/.hammerspoon/skhd_hud_settings.lua` controls ordered colors, alpha (`blocks`, `badge`, `badge_idle`, `separator`) and badge typography (`badge_size`, `badge_y_offset`).
 
 ## Troubleshooting
 
